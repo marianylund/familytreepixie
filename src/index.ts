@@ -1,6 +1,9 @@
 import * as PIXI from 'pixi.js'
 
 const rectangle:PIXI.Graphics = new PIXI.Graphics();
+const entryContainer = new PIXI.Container();
+const graphics2 = new PIXI.Graphics();
+
 function main() {
   // The application will create a renderer using WebGL, if possible,
   // with a fallback to a canvas render. It will also setup the ticker
@@ -19,50 +22,81 @@ function main() {
   app.renderer.resize(window.innerWidth, window.innerHeight);
   document.body.appendChild(app.view);
 
-  let entry = new PIXI.Container();
-  entry.addChild(rectangle);
+  entryContainer.addChild(rectangle);
   
   // Rectangle
   rectangle.lineStyle(2, 0xFEEB77, 1);
-  //rectangle.beginFill(0x650A5A);
+  rectangle.beginFill(0x650A5A);
   rectangle.drawRect(0, 0, 200, 100);
   rectangle.endFill();
 
   let textTitle = AddText("Hellou");
-  entry.addChild(textTitle);
+  entryContainer.addChild(textTitle);
   textTitle.pivot.x = textTitle.width / 2;
   textTitle.x = rectangle.width / 2;
   
-  entry.pivot.x = entry.width / 2;
-  entry.pivot.y = entry.height / 2;
-  entry.x = 200;
-  entry.y = 200;
-  app.stage.addChild(entry);
+  entryContainer.pivot.x = entryContainer.width / 2;
+  entryContainer.pivot.y = entryContainer.height / 2;
+  entryContainer.x = 200;
+  entryContainer.y = 200;
+  app.stage.addChild(entryContainer);
 
   // Make entry interactive
-  entry.interactive = true;
-  entry.buttonMode = true;
-  entry
-        // .on('pointerdown', onButtonDown)
-        // .on('pointerup', onButtonUp)
-        // .on('pointerupoutside', onButtonUp)
+  entryContainer.interactive = true;
+  entryContainer.buttonMode = true;
+  entryContainer
+        .on('pointerdown', onDragStart)
+        .on('pointerup', onDragEnd)
+        .on('pointerupoutside', onDragEnd)
         .on('pointerover', onButtonOver)
-        //.on('pointerout', onButtonOut);
+        .on('pointerout', onButtonOut)
+        .on('pointermove', onDragMove);
 
   
   // Create a new texture
   const texture = PIXI.Texture.from('images/chess.png');
-  const bunny = new PIXI.Sprite(texture);
-  bunny.setTransform(app.screen.width / 2, app.screen.height / 2, 0.5, 0.5);
-  bunny.anchor.set(0.5);
-  app.stage.addChild(bunny);
+  const chessIm = new PIXI.Sprite(texture);
+  chessIm.setTransform(app.screen.width / 2, app.screen.height / 2, 0.5, 0.5);
+  chessIm.anchor.set(0.5);
+  app.stage.addChild(chessIm);
+
+  chessIm.interactive = true;
+  chessIm.buttonMode = true;
+  chessIm
+    .on('pointerdown', onDragStart)
+    .on('pointerup', onDragEnd)
+    .on('pointerupoutside', onDragEnd)
+    .on('pointerover', onButtonOver)
+    .on('pointerout', onButtonOut)
+    .on('pointermove', onDragMove);
+
+
+    graphics2.lineStyle(2, 0xFFFFFF, 2);
+    graphics2.moveTo(120, 10);
+
+    graphics2.bezierCurveTo(10, 10, 130, 0, entryContainer.x, entryContainer.y);
+    
+
+    app.stage.addChild(graphics2);
 
   app.ticker.add((delta) => {
     // rotate the container!
     // use delta to create frame-independent transform
-    bunny.rotation -= 0.001 * delta;
+    chessIm.rotation -= 0.001 * delta;
   });
+
+  
 }
+
+function DrawBezierLine(){
+  graphics2.clear();
+
+  graphics2.lineStyle(2, 0xFFFFFF, 2);
+  graphics2.moveTo(120, 10);
+  graphics2.bezierCurveTo(10, 10, 130, 0, entryContainer.x, entryContainer.y);
+}
+
+
 
 function AddText(textToWrite: string){
   const style = new PIXI.TextStyle({
@@ -86,20 +120,6 @@ function AddText(textToWrite: string){
   return richText;
 }
 
-// function onButtonDown() {
-//   this.isdown = true;
-//   this.texture = textureButtonDown;
-//   this.alpha = 1;
-// }
-
-// function onButtonUp() {
-//   this.isdown = false;
-//   if (this.isOver) {
-//       this.texture = textureButtonOver;
-//   } else {
-//       this.texture = textureButton;
-//   }
-// }
 
 function onButtonOver() {
   this.isOver = true;
@@ -107,15 +127,43 @@ function onButtonOver() {
       return;
   }
   //rectangle
+  //this.scale.x = 1.25;
+  //this.scale.y = 1.25;
 }
 
-// function onButtonOut() {
-//   this.isOver = false;
-//   if (this.isdown) {
-//       return;
-//   }
-//   this.texture = textureButton;
-// }
+function onButtonOut() {
+  this.isOver = false;
+  if (this.isdown) {
+      return;
+  }
+  //this.scale.x = 1;
+  //this.scale.y = 1;
+}
+
+function onDragStart(event:any) {
+  // store a reference to the data
+  // the reason for this is because of multitouch
+  // we want to track the movement of this particular touch
+  this.data = event.data;
+  this.alpha = 0.5;
+  this.dragging = true;
+}
+
+function onDragEnd() {
+  this.alpha = 1;
+  this.dragging = false;
+  // set the interaction data to null
+  this.data = null;
+}
+
+function onDragMove() {
+  if (this.dragging) {
+      const newPosition = this.data.getLocalPosition(this.parent);
+      this.x = newPosition.x;
+      this.y = newPosition.y;
+      DrawBezierLine();
+  }
+}
 
 main();
 
