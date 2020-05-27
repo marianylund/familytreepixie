@@ -4,6 +4,8 @@ const rectangle:PIXI.Graphics = new PIXI.Graphics();
 const entryContainer = new PIXI.Container();
 const graphics2 = new PIXI.Graphics();
 
+const TextInput = require('pixi-text-input')
+
 function main() {
   // The application will create a renderer using WebGL, if possible,
   // with a fallback to a canvas render. It will also setup the ticker
@@ -34,6 +36,8 @@ function main() {
   entryContainer.addChild(textTitle);
   textTitle.pivot.x = textTitle.width / 2;
   textTitle.x = rectangle.width / 2;
+  textTitle.pivot.y = textTitle.height / 2;
+  textTitle.y = rectangle.height / 2;
   
   entryContainer.pivot.x = entryContainer.width / 2;
   entryContainer.pivot.y = entryContainer.height / 2;
@@ -71,10 +75,7 @@ function main() {
     .on('pointermove', onDragMove);
 
 
-    graphics2.lineStyle(2, 0xFFFFFF, 2);
-    graphics2.moveTo(120, 10);
-
-    graphics2.bezierCurveTo(10, 10, 130, 0, entryContainer.x, entryContainer.y);
+    DrawBezierLine();
     
 
     app.stage.addChild(graphics2);
@@ -93,31 +94,51 @@ function DrawBezierLine(){
 
   graphics2.lineStyle(2, 0xFFFFFF, 2);
   graphics2.moveTo(120, 10);
-  graphics2.bezierCurveTo(10, 10, 130, 0, entryContainer.x, entryContainer.y);
+  graphics2.bezierCurveTo(10, 10, 130, 0, entryContainer.x, entryContainer.y - entryContainer.height/2);
 }
 
 
 
 function AddText(textToWrite: string){
-  const style = new PIXI.TextStyle({
-    fontFamily: 'Arial',
-    fontSize: 36,
-    fontStyle: 'italic',
-    fontWeight: 'bold',
-    fill: ['#ffffff'], // gradient
-    // stroke: '#4a1850',
-    // strokeThickness: 5,
-    // dropShadow: true,
-    // dropShadowColor: '#000000',
-    // dropShadowBlur: 4,
-    // dropShadowAngle: Math.PI / 6,
-    // dropShadowDistance: 6,
-    // wordWrap: true,
-    // wordWrapWidth: 440,
-  });
+  // const style = new PIXI.TextStyle({
+  //   fontFamily: 'Arial',
+  //   fontSize: 36,
+  //   fontStyle: 'italic',
+  //   fontWeight: 'bold',
+  //   fill: ['#ffffff'], // gradient
+  //   // stroke: '#4a1850',
+  //   // strokeThickness: 5,
+  //   // dropShadow: true,
+  //   // dropShadowColor: '#000000',
+  //   // dropShadowBlur: 4,
+  //   // dropShadowAngle: Math.PI / 6,
+  //   // dropShadowDistance: 6,
+  //   // wordWrap: true,
+  //   // wordWrapWidth: 440,
+  // });
 
-  const richText = new PIXI.Text(textToWrite, style);
-  return richText;
+  // const richText = new PIXI.Text(textToWrite, style);
+  
+  //return richText;
+
+  const input = new TextInput({
+    input: {
+      fontSize: '20px',
+      padding: '5px',
+      width: '150px',
+      color: '#26272E'
+    },
+    box: {
+      default: {fill: 0xE8E9F3, rounded: 12, stroke: {color: 0xCBCEE0, width: 3}},
+      focused: {fill: 0xE1E3EE, rounded: 12, stroke: {color: 0xABAFC6, width: 3}},
+      disabled: {fill: 0xDBDBDB, rounded: 12}
+    }
+  })
+  
+  input.placeholder = 'Enter your Text...'
+  input.
+
+  return input;
 }
 
 
@@ -145,7 +166,7 @@ function onDragStart(event:any) {
   // the reason for this is because of multitouch
   // we want to track the movement of this particular touch
   this.data = event.data;
-  this.alpha = 0.5;
+  this.alpha = 0.8;
   this.dragging = true;
 }
 
